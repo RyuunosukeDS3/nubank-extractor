@@ -1,7 +1,0 @@
-cert.p12
-.env
-*.pyc
-*.pyo
-
-__pycache__/
-*.py[cod]
