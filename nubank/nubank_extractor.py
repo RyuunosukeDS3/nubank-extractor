@@ -13,7 +13,7 @@ class NubankExtractor(object):
         self.nubank_db_manager = nubank_db_manager
 
     def extract_nubank_data(self):
-        self._get_and_navigate_through_card_statements()
+        # self._get_and_navigate_through_card_statements()
         self._get_and_navigate_through_account_statements()
 
     def _get_and_navigate_through_card_statements(self):
@@ -98,34 +98,43 @@ class NubankExtractor(object):
         return self.nubank.get_account_statements()
 
     def _get_and_navigate_through_account_statements(self):
-        statements = self.nubank.get_account_statements()
+        statements = self.nubank.get_account_statements_paginated()
 
-        for statement in statements:
-            if not self.nubank_db_manager.account_statement_exists(statement["id"]):
-                logging.info(
-                    "Salvando transação %s de/para %s",
-                    statement["id"],
-                    statement["detail"].split("\n")[0],
-                )
-                time = format_time(statement["postDate"])
-                target = None
-                source = None
+        while len(statements["edges"]) > 0:
+            for statement in statements["edges"]:
+                if (
+                    not statement["node"]["footer"]
+                    or "Valor adicionado na conta por cartão de crédito e enviado por Pix"
+                    not in statement["node"]["footer"]
+                ):
+                    if "money-out" in statement["node"]["tags"]:
+                        payment_type = "made"
 
-                if statement["__typename"] == "PixTransferOutEvent":
-                    target = statement["detail"].split("\n")[0]
+                    elif "money-in" in statement["node"]["tags"]:
+                        payment_type = "reicived"
 
-                elif statement["__typename"] == "PixTransferInEvent":
-                    source = statement["detail"].split("\n")[0]
+                    if "Compra no débito" in statement["node"]["title"]:
+                        type = "debit card"
 
-                else:
-                    print(time)
+                    elif "Transferência" in statement["node"]["title"]:
+                        if statement["node"]["footer"] == "Pix":
+                            type = "pix"
+                        else:
+                            type = "transfer"
+                    else:
+                        if "payments" in statement["node"]["tags"]:
+                            type = "payment"
+                            if "Pagamento da fatura" in statement["node"]["title"]:
+                                target = "nu credit card"
+                            else:
+                                target = statement["node"]["detail"].split("\n")[0]
 
-                transaction = {
-                    "id": statement["id"],
-                    "target": target,
-                    "source": source,
-                    "amount": statement["amount"] * 100,
-                    "time": time,
-                }
+                    transacion = {
+                        "id": statement["node"]["id"],
+                        "payment_type": payment_type,
+                        "type": type,
+                        "target": target,
+                    }
 
-                self.nubank_db_manager.save_account_transaction(transaction)
+            cursor = statements["edges"][-1]["cursor"]
+            statements = self.nubank.get_account_statements_paginated(cursor)
