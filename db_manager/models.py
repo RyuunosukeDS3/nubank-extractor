@@ -24,7 +24,8 @@ class AccountTransactions(Base):
     __tablename__ = "account_transactions"
 
     id = Column(String(255), primary_key=True)
-    source = Column(String(255))
-    target = Column(String(255))
-    amount = Column(Integer(), nullable=False)
+    payment_type = Column(String(255), nullable=False)
+    type = Column(String(255), nullable=False)
+    endpoint = Column(String(255), nullable=False)
     time = Column(TIMESTAMP, nullable=False)
+    amount = Column(Integer(), nullable=False)

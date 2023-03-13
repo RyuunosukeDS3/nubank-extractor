@@ -31,10 +31,11 @@ class NubankDbManager(object):
         self.session.add(
             AccountTransactions(
                 id=transaction["id"],
-                source=transaction["source"],
-                target=transaction["target"],
-                amount=transaction["amount"],
+                payment_type=transaction["payment_type"],
+                type=transaction["type"],
+                endpoint=transaction["endpoint"],
                 time=transaction["time"],
+                amount=transaction["amount"],
             )
         )
         self.session.commit()
@@ -70,4 +71,11 @@ class NubankDbManager(object):
             self.session.query(AccountTransactions)
             .filter(AccountTransactions.id == transaction_id)
             .first()
+        )
+
+    def get_unpaid_card_statements(self):
+        return (
+            self.session.query(CardTransactions)
+            .filter(CardTransactions.paid == False)
+            .all()
         )
