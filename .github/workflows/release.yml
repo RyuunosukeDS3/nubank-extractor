@@ -1,5 +1,4 @@
 name: Scorched-CI-Release
-description: 'Automates releases with Major, Minor and Patch options'
 on:
   workflow_dispatch:
     inputs:
