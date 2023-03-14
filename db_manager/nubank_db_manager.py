@@ -1,17 +1,16 @@
-from .models import CardTransactions
-
-from config import Config
+# pylint: disable=singleton-comparison
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from config import Config
 from .models import CardTransactions, AccountTransactions
 
 
-class NubankDbManager(object):
+class NubankDbManager:
     def __init__(self):
         config = Config()
         engine = create_engine(config.db_uri)
-        Session = sessionmaker(bind=engine)
-        self.session = Session()
+        session = sessionmaker(bind=engine)
+        self.session = session()
 
     def save_card_transaction(self, transaction):
         self.session.add(

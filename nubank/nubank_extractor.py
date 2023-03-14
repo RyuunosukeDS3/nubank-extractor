@@ -1,25 +1,29 @@
-from pynubank import Nubank
 import logging
-from utils import format_time
-from dateutil import relativedelta
 from datetime import datetime
+from dateutil import relativedelta
 from pytz import UTC
+from pynubank import Nubank
+from utils import format_time
 
 
-class NubankExtractor(object):
+class NubankExtractor:
     def __init__(self, user_id, password, cert_path, nubank_db_manager):
         self.nubank = Nubank()
         self.nubank.authenticate_with_cert(user_id, password, cert_path)
         self.nubank_db_manager = nubank_db_manager
 
     def get_and_navigate_through_card_statements(self):
-        statements = self.nubank.get_card_statements()
-        for statement in statements:
-            existing_transaction = self.nubank_db_manager.card_statement_exists(
-                statement["id"]
-            )
-            if not existing_transaction:
-                self._save_card_statements(statement)
+        """Require nubank card data and navigate through it"""
+        try:
+            statements = self.nubank.get_card_statements()
+            for statement in statements:
+                existing_transaction = self.nubank_db_manager.card_statement_exists(
+                    statement["id"]
+                )
+                if not existing_transaction:
+                    self._save_card_statements(statement)
+        except Exception as err:
+            logging.error(err)
 
     def _save_card_statements(self, statement):
         paid = False
@@ -56,62 +60,69 @@ class NubankExtractor(object):
         self.nubank_db_manager.save_card_transaction(transaction)
 
     def check_if_is_fully_paid(self):
-        unpaid_statemens = self.nubank_db_manager.get_unpaid_card_statements()
+        """Check if installments are fully paid"""
+        try:
+            unpaid_statemens = self.nubank_db_manager.get_unpaid_card_statements()
 
-        for transaction in unpaid_statemens:
-            if transaction.paid == False:
-                paied_bills = self._get_paied_bills(transaction.time)
-                paid = False
+            for transaction in unpaid_statemens:
+                if transaction.paid is False:
+                    paied_bills = self._get_paied_bills(transaction.time)
+                    paid = False
 
-                remaining_charges = (
-                    transaction.charges - (paied_bills)
-                    if transaction.charges - (paied_bills) > 0
-                    else 0
-                )
-                if remaining_charges >= 0:
-                    logging.info(
-                        "Updating card transaction %s with name %s",
-                        transaction.id,
-                        transaction.description,
+                    remaining_charges = (
+                        transaction.charges - (paied_bills)
+                        if transaction.charges - (paied_bills) > 0
+                        else 0
                     )
-                    self.nubank_db_manager.set_paid_as_true(transaction.id)
+                    if remaining_charges >= 0:
+                        logging.info(
+                            "Updating card transaction %s with name %s",
+                            transaction.id,
+                            transaction.description,
+                        )
+                        self.nubank_db_manager.set_paid_as_true(transaction.id)
 
-                    if remaining_charges == 0:
-                        paid = True
+                        if remaining_charges == 0:
+                            paid = True
 
-                    self.nubank_db_manager.update_remaining_charges(
-                        transaction.id, paid, remaining_charges
-                    )
+                        self.nubank_db_manager.update_remaining_charges(
+                            transaction.id, paid, remaining_charges
+                        )
+        except Exception as err:
+            logging.error(err)
 
     @staticmethod
     def _get_paied_bills(date):
         date = date.replace(day=5)
+        # pylint: disable=no-value-for-parameter
         if not date.tzinfo:
             date = UTC.localize(date)
         delta = relativedelta.relativedelta(UTC.localize(datetime.now()), date)
+        # pylint: enable=no-value-for-parameter
         return delta.months + delta.years * 12
 
-    def get_account_statements(self):
-        return self.nubank.get_account_statements()
-
     def get_and_navigate_through_account_statements(self):
-        statements = self.nubank.get_account_statements_paginated()
+        """Require nubank account data and navigate through it"""
+        try:
+            statements = self.nubank.get_account_statements_paginated()
 
-        while len(statements["edges"]) > 0:
-            for statement in statements["edges"]:
-                if not self.nubank_db_manager.account_statement_exists(
-                    statement["node"]["id"]
-                ):
-                    logging.info(
-                        "Saving account transaction %s with name %s",
-                        statement["node"]["id"],
-                        statement["node"]["detail"].split("\n")[0],
-                    )
+            while len(statements["edges"]) > 0:
+                for statement in statements["edges"]:
+                    if not self.nubank_db_manager.account_statement_exists(
+                        statement["node"]["id"]
+                    ):
+                        logging.info(
+                            "Saving account transaction %s with name %s",
+                            statement["node"]["id"],
+                            statement["node"]["detail"].split("\n")[0],
+                        )
 
-                    self._save_account_statements(statement)
+                        self._save_account_statements(statement)
 
-            cursor = statements["edges"][-1]["cursor"]
-            statements = self.nubank.get_account_statements_paginated(cursor)
+                cursor = statements["edges"][-1]["cursor"]
+                statements = self.nubank.get_account_statements_paginated(cursor)
+        except Exception as err:
+            logging.error(err)
 
     def _save_account_statements(self, statement):
         transaction = {}
@@ -153,7 +164,8 @@ class NubankExtractor(object):
             }
         )
 
-    def _get_payment_type(self, statement):
+    @staticmethod
+    def _get_payment_type(statement):
         if statement["node"]["tags"]:
             if "money-out" in statement["node"]["tags"]:
                 payment_type = "made"
@@ -169,7 +181,8 @@ class NubankExtractor(object):
 
         return payment_type
 
-    def _get_type_of_transaction(self, statement):
+    @staticmethod
+    def _get_type_of_transaction(statement):
         if "Compra no débito" in statement["node"]["title"]:
             transaction_type = "debit card"
 

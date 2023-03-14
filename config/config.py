@@ -1,9 +1,9 @@
+import logging
 from os import getenv
 from dotenv import load_dotenv
-import logging
 
 
-class Config(object):
+class Config:
     def __init__(self):
         load_dotenv()
 
@@ -11,6 +11,7 @@ class Config(object):
         self.password = getenv("PASSWORD")
         self.cert_path = getenv("CERT_PATH")
         self.db_uri = getenv("DB_URI")
+        self.run_time = getenv("RUN_TIME")
 
     @staticmethod
     def logging_config():
