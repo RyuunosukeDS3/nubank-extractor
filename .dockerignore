@@ -1,0 +1,10 @@
+.devcontainer/
+.github/
+cert.p12
+.env
+*.pyc
+*.pyo
+__pycache__/
+*.py[cod]
+.gitgnore
+requirements-dev.txt
