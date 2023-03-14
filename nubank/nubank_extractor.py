@@ -164,7 +164,8 @@ class NubankExtractor:
             }
         )
 
-    def _get_payment_type(self, statement):
+    @staticmethod
+    def _get_payment_type(statement):
         if statement["node"]["tags"]:
             if "money-out" in statement["node"]["tags"]:
                 payment_type = "made"
@@ -180,7 +181,8 @@ class NubankExtractor:
 
         return payment_type
 
-    def _get_type_of_transaction(self, statement):
+    @staticmethod
+    def _get_type_of_transaction(statement):
         if "Compra no débito" in statement["node"]["title"]:
             transaction_type = "debit card"
 
