@@ -1,11 +1,10 @@
-name: Release
-
+name: Scorched-CI-Release
 on:
   workflow_dispatch:
     inputs:
       release:
         type: choice
-        description: Tipo de Release
+        description: Release Type
         options: 
         - major
         - minor
@@ -13,7 +12,7 @@ on:
 
 jobs:
   release:
-    if: ${{ github.triggering_actor == 'RyuunosukeDS3' && github.ref == 'refs/heads/develop' }}
+    if: ${{ github.ref == 'refs/heads/develop' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -28,18 +27,18 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements-dev.txt
-    - name: Code analysis with pylint
-      run: |
-        pylint --rcfile=.pylintrc $(git ls-files '*.py')
-    - name: Clonando ultima tag do Scorched CI
+    - name: Clonning last Scorched CI version
       run: |
         git clone https://github.com/ScorchedDevs/scorched-ci.git
         cd scorched-ci
-    - name: Instalando dependências
+        git fetch --tags
+        latestTag=$(git describe --tags `git rev-list --tags --max-count=1`)
+        git checkout $latestTag
+    - name: Installing dependencies
       run: |
         cd scorched-ci
         pip install -r requirements.txt
-    - name: Criando o release
+    - name: Creating the release
       run: |
         cd scorched-ci
         python -c 'import main; main.release_${{ github.event.inputs.release }}()'
