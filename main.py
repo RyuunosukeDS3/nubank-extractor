@@ -1,6 +1,7 @@
+import argparse
 from config import Config
 from scheduler import ScheduleJob
-import argparse
+
 
 parser = argparse.ArgumentParser()
 config = Config()

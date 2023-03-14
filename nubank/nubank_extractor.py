@@ -1,12 +1,12 @@
-from pynubank import Nubank
 import logging
-from utils import format_time
-from dateutil import relativedelta
 from datetime import datetime
+from dateutil import relativedelta
 from pytz import UTC
+from pynubank import Nubank
+from utils import format_time
 
 
-class NubankExtractor(object):
+class NubankExtractor:
     def __init__(self, user_id, password, cert_path, nubank_db_manager):
         self.nubank = Nubank()
         self.nubank.authenticate_with_cert(user_id, password, cert_path)
@@ -65,7 +65,7 @@ class NubankExtractor(object):
             unpaid_statemens = self.nubank_db_manager.get_unpaid_card_statements()
 
             for transaction in unpaid_statemens:
-                if transaction.paid == False:
+                if transaction.paid is False:
                     paied_bills = self._get_paied_bills(transaction.time)
                     paid = False
 

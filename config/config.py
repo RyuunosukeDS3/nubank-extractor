@@ -1,9 +1,9 @@
+import logging
 from os import getenv
 from dotenv import load_dotenv
-import logging
 
 
-class Config(object):
+class Config:
     def __init__(self):
         load_dotenv()
 

@@ -1,12 +1,12 @@
-import schedule
 import time
 import logging
+import schedule
 from db_manager import NubankDbManager
 from nubank import NubankExtractor
 from config import Config
 
 
-class ScheduleJob(object):
+class ScheduleJob:
     def __init__(self):
         self.config = Config()
         nubank_db_manager = NubankDbManager()
