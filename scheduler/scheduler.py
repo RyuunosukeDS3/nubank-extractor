@@ -25,7 +25,6 @@ class ScheduleJob:
         logging.info("Finished running extraction")
 
     def run_jobs(self):
-        self.extract_nubank_data()
         logging.info(
             "Scheduling job %s to run everyday at %s UTC",
             self.extract_nubank_data.__name__,
