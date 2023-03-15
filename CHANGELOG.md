@@ -10,7 +10,8 @@
 
 ## Fixes
 
- - N/A
+ - Fix Dockerfile
+ - Fix scheduler
 
 ## Compatibility Breaker
 
