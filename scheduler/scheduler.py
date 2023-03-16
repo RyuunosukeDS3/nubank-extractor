@@ -19,13 +19,13 @@ class ScheduleJob:
 
     def extract_nubank_data(self):
         logging.info("Starting to run nubank extraction")
+        self.nubank_extractor.extract_card_bills()
         self.nubank_extractor.get_and_navigate_through_card_statements()
         self.nubank_extractor.check_if_is_fully_paid()
         self.nubank_extractor.get_and_navigate_through_account_statements()
         logging.info("Finished running extraction")
 
     def run_jobs(self):
-        self.extract_nubank_data()
         logging.info(
             "Scheduling job %s to run everyday at %s UTC",
             self.extract_nubank_data.__name__,

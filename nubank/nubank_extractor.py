@@ -115,12 +115,6 @@ class NubankExtractor:
                     if not self.nubank_db_manager.account_statement_exists(
                         statement["node"]["id"]
                     ):
-                        logging.info(
-                            "Saving account transaction %s with name %s",
-                            statement["node"]["id"],
-                            statement["node"]["detail"].split("\n")[0],
-                        )
-
                         self._save_account_statements(statement)
 
                 cursor = statements["edges"][-1]["cursor"]
@@ -144,6 +138,12 @@ class NubankExtractor:
                     "time": statement["node"]["postDate"],
                     "amount": statement["node"]["amount"] * 10,
                 }
+            )
+
+            logging.info(
+                "Saving account transaction %s with name %s",
+                statement["node"]["id"],
+                statement["node"]["detail"].split("\n")[0],
             )
 
             self.nubank_db_manager.save_account_transaction(transaction)
@@ -175,11 +175,11 @@ class NubankExtractor:
                 payment_type = "made"
 
             elif "money-in" in statement["node"]["tags"]:
-                payment_type = "recieved"
+                payment_type = "received"
 
         else:
             if statement["node"]["kind"] and "POSITIVE" in statement["node"]["kind"]:
-                payment_type = "recieved"
+                payment_type = "received"
             else:
                 payment_type = "made"
 
@@ -214,3 +214,33 @@ class NubankExtractor:
                 transaction_type = "debit installment"
 
         return transaction_type
+
+    def extract_card_bills(self):
+        bills = self.nubank.get_bills()
+
+        bill_data = {}
+
+        for bill in bills:
+            time = format_time(bill["summary"]["close_date"])
+
+            bill_data = {
+                "close_date": time,
+                "state": bill["state"],
+                "amount": bill["summary"]["total_balance"],
+            }
+
+            existing_bill = self.nubank_db_manager.card_bill_exists(time)
+            if existing_bill:
+                if existing_bill.state != bill["state"]:
+                    logging.info(
+                        "Updating card Bill from %s",
+                        bill["summary"]["close_date"],
+                    )
+                    self.nubank_db_manager.update_card_bill(bill_data)
+
+            else:
+                logging.info(
+                    "Saving card Bill from %s",
+                    bill["summary"]["close_date"],
+                )
+                self.nubank_db_manager.save_card_bill(bill_data)

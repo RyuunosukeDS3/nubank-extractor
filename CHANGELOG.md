@@ -2,7 +2,7 @@
 
 ## New Features
 
- - N/A
+ - Added card bills
 
 ## Enhancements
 
@@ -10,8 +10,9 @@
 
 ## Fixes
 
- - N/A
+ - Fix Dockerfile
+ - Fix scheduler
 
 ## Compatibility Breaker
 
- - First version
+ - N/A
