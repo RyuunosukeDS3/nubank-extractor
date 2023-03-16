@@ -10,7 +10,7 @@
 
 ## Fixes
 
- - N/A
+ - Publish Fixes
 
 ## Compatibility Breaker
 
