@@ -11,8 +11,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Check tag name
-        run: echo ${{  github.ref_name }}
+      - name: Get lowercase repo name
+        id: repo_name
+        run: eecho "REPO_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      - name: Check reponame lowercase
+        run: echo ${{ env.REPO_NAME }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -29,5 +32,5 @@ jobs:
           platforms: linux/amd64,linux/arm64, linux/arm/v7
           push: true
           tags: |
-            ${{ github.repository }}:${{  github.ref_name }}
-            ${{ github.repository }}:latest
+            ${{ env.REPO_NAME }}:${{  github.ref_name }}
+            ${{ env.REPO_NAME }}:latest
