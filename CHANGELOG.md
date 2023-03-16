@@ -2,7 +2,7 @@
 
 ## New Features
 
- - Added card bills
+ - N/A
 
 ## Enhancements
 
@@ -10,8 +10,7 @@
 
 ## Fixes
 
- - Fix Dockerfile
- - Fix scheduler
+ - Removing instante extraction even with -sr = False
 
 ## Compatibility Breaker
 
