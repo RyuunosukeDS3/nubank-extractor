@@ -10,7 +10,7 @@
 
 ## Fixes
 
- - N/A
+ - Removing instante extraction even with -sr = False
 
 ## Compatibility Breaker
 

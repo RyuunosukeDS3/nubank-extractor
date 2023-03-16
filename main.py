@@ -21,5 +21,4 @@ if args.single_run:
     schedule_job.extract_nubank_data()
 
 else:
-    schedule_job.extract_nubank_data()
     schedule_job.run_jobs()
