@@ -10,7 +10,7 @@
 
 ## Fixes
 
- - Fix repo name
+ - Publish Fixes
 
 ## Compatibility Breaker
 
