@@ -10,7 +10,7 @@
 
 ## Fixes
 
- - Publishing do DockerHub instead
+ - Fixing docker publish
 
 ## Compatibility Breaker
 
