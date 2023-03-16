@@ -2,7 +2,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from config import Config
-from .models import CardTransactions, AccountTransactions
+from .app_models import CardTransactions, AccountTransactions, CardBills
 
 
 class NubankDbManager:
@@ -78,3 +78,26 @@ class NubankDbManager:
             .filter(CardTransactions.paid == False)
             .all()
         )
+
+    def save_card_bill(self, bill):
+        self.session.add(
+            CardBills(
+                close_date=bill["close_date"],
+                state=bill["state"],
+                amount=bill["amount"],
+            )
+        )
+        self.session.commit()
+
+    def card_bill_exists(self, close_date):
+        return (
+            self.session.query(CardBills)
+            .filter(CardBills.close_date == close_date)
+            .first()
+        )
+
+    def update_card_bill(self, bill):
+        self.session.query(CardBills).filter(
+            CardBills.close_date == bill["close_date"]
+        ).update({"state": bill["state"], "amount": bill["amount"]})
+        self.session.commit()
