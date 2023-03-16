@@ -10,7 +10,7 @@
 
 ## Fixes
 
- - publish.yaml
+ - Publishing do DockerHub instead
 
 ## Compatibility Breaker
 
