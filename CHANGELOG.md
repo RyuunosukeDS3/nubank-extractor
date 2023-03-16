@@ -2,7 +2,7 @@
 
 ## New Features
 
- - N/A
+ - Added card bills
 
 ## Enhancements
 
