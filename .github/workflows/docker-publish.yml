@@ -2,8 +2,8 @@ name: Publish to Dockerhub
 
 on:
   push:
-    branches:
-      - "main"
+    tags:
+      - "*"
 
 jobs:
   docker:
@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Check tag name
+        run: echo ${{  github.ref_name }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx

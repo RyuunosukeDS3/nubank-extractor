@@ -10,7 +10,7 @@
 
 ## Fixes
 
- - Fixing docker publish
+ - Fix publish
 
 ## Compatibility Breaker
 
