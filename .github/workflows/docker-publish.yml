@@ -11,10 +11,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Read Docker Image Identifiers
-        run: echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
-      - name: test
-        run: echo ${{ env.IMAGE_REPOSITORY }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -31,5 +27,5 @@ jobs:
           platforms: linux/amd64,linux/arm64, linux/arm/v7
           push: true
           tags: |
-            ${{ env.IMAGE_REPOSITORY }}:${{  github.ref_name }}
-            ${{ env.IMAGE_REPOSITORY }}:latest
+            ryuunosukeds3/nubank-extractor:${{  github.ref_name }}
+            ryuunosukeds3/nubank-extractor:latest

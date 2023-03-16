@@ -10,7 +10,7 @@
 
 ## Fixes
 
- - Publish Fixes
+ - Setting publish to a set name
 
 ## Compatibility Breaker
 
