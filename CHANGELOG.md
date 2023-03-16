@@ -10,7 +10,7 @@
 
 ## Fixes
 
- - N/A
+ - Setting reponame to lowercase
 
 ## Compatibility Breaker
 
