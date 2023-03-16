@@ -12,8 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Get lowercase repo name
-        id: repo_name
-        run: echo "REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        run: echo REPO_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
       - name: Check reponame lowercase
         run: echo ${{ env.REPO_NAME }}
       - name: Set up QEMU
