@@ -10,7 +10,7 @@
 
 ## Fixes
 
- - N/A
+ - publish.yaml
 
 ## Compatibility Breaker
 
