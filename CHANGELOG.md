@@ -10,7 +10,7 @@
 
 ## Fixes
 
- - Fix publish
+ - Setting reponame to lowercase
 
 ## Compatibility Breaker
 
