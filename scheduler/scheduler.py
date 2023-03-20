@@ -32,7 +32,7 @@ class ScheduleJob:
             self.config.run_time,
         )
 
-        schedule.every().day.at(self.config.run_time).do(self.extract_nubank_data)
+        schedule.every(self.config.run_time).hours.do(self.extract_nubank_data)
         while True:
             schedule.run_pending()
             time.sleep(60)
