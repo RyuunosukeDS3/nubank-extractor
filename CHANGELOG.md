@@ -10,7 +10,7 @@
 
 ## Fixes
 
- - N/A
+ - Small fixes
 
 ## Compatibility Breaker
 
