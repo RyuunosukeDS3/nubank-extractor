@@ -136,7 +136,7 @@ class NubankExtractor:
                 {
                     "id": statement["node"]["id"],
                     "time": statement["node"]["postDate"],
-                    "amount": statement["node"]["amount"] * 10,
+                    "amount": statement["node"]["amount"] * 100,
                 }
             )
 
@@ -237,7 +237,12 @@ class NubankExtractor:
                         bill["summary"]["close_date"],
                     )
                     self.nubank_db_manager.update_card_bill(bill_data)
-
+                elif existing_bill.amout != bill["summary"]["total_balance"]:
+                    logging.info(
+                        "Updating card Bill from %s",
+                        bill["summary"]["close_date"],
+                    )
+                    self.nubank_db_manager.update_card_bill(bill_data)
             else:
                 logging.info(
                     "Saving card Bill from %s",
