@@ -11,7 +11,7 @@ class Config:
         self.password = getenv("PASSWORD")
         self.cert_path = getenv("CERT_PATH")
         self.db_uri = getenv("DB_URI")
-        self.run_time = getenv("RUN_TIME")
+        self.run_time = int(getenv("RUN_TIME"))
 
     @staticmethod
     def logging_config():

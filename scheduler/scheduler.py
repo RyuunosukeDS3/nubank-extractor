@@ -27,7 +27,7 @@ class ScheduleJob:
 
     def run_jobs(self):
         logging.info(
-            "Scheduling job %s to run everyday at %s UTC",
+            "Scheduling job %s to run every %s hours",
             self.extract_nubank_data.__name__,
             self.config.run_time,
         )

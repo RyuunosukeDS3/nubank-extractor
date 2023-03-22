@@ -21,6 +21,10 @@ class NubankExtractor:
                 existing_transaction = self.nubank_db_manager.card_statement_exists(
                     statement["id"]
                 )
+                if existing_transaction and self._time_delta_is_over(
+                    existing_transaction.time, datetime.now(), 30
+                ):
+                    break
                 if not existing_transaction:
                     self._save_card_statements(statement)
             except Exception as error:
@@ -62,38 +66,35 @@ class NubankExtractor:
 
     def check_if_is_fully_paid(self):
         """Check if installments are fully paid"""
-        try:
-            unpaid_statemens = self.nubank_db_manager.get_unpaid_card_statements()
-        except Exception as err:
-            logging.error(err)
+        unpaid_statemens = self.nubank_db_manager.get_unpaid_card_statements()
 
-            for transaction in unpaid_statemens:
-                try:
-                    if transaction.paid is False:
-                        paied_bills = self._get_paied_bills(transaction.time)
-                        paid = False
+        for transaction in unpaid_statemens:
+            try:
+                if transaction.paid is False:
+                    paied_bills = self._get_paied_bills(transaction.time)
+                    paid = False
 
-                        remaining_charges = (
-                            transaction.charges - (paied_bills)
-                            if transaction.charges - (paied_bills) > 0
-                            else 0
+                    remaining_charges = (
+                        transaction.charges - (paied_bills)
+                        if transaction.charges - (paied_bills) > 0
+                        else 0
+                    )
+                    if remaining_charges >= 0:
+                        logging.info(
+                            "Updating card transaction %s with name %s",
+                            transaction.id,
+                            transaction.description,
                         )
-                        if remaining_charges >= 0:
-                            logging.info(
-                                "Updating card transaction %s with name %s",
-                                transaction.id,
-                                transaction.description,
-                            )
-                            self.nubank_db_manager.set_paid_as_true(transaction.id)
+                        self.nubank_db_manager.set_paid_as_true(transaction.id)
 
-                            if remaining_charges == 0:
-                                paid = True
+                        if remaining_charges == 0:
+                            paid = True
 
-                            self.nubank_db_manager.update_remaining_charges(
-                                transaction.id, paid, remaining_charges
-                            )
-                except Exception as error:
-                    logging.error(error)
+                        self.nubank_db_manager.update_remaining_charges(
+                            transaction.id, paid, remaining_charges
+                        )
+            except Exception as error:
+                logging.error(error)
 
     @staticmethod
     def _get_paied_bills(date):
@@ -108,14 +109,23 @@ class NubankExtractor:
     def get_and_navigate_through_account_statements(self):
         """Require nubank account data and navigate through it"""
         statements = self.nubank.get_account_statements_paginated()
+        finished = False
 
-        while len(statements["edges"]) > 0:
+        while len(statements["edges"]) and not finished > 0:
             try:
                 for statement in statements["edges"]:
-                    if not self.nubank_db_manager.account_statement_exists(
-                        statement["node"]["id"]
-                    ):
+                    existing_transaction = (
+                        self.nubank_db_manager.account_statement_exists(
+                            statement["node"]["id"]
+                        )
+                    )
+                    if not existing_transaction:
                         self._save_account_statements(statement)
+                    elif self._time_delta_is_over(
+                        existing_transaction.time, datetime.now(), 30
+                    ):
+                        finished = True
+                        break
 
                 cursor = statements["edges"][-1]["cursor"]
                 statements = self.nubank.get_account_statements_paginated(cursor)
@@ -232,20 +242,28 @@ class NubankExtractor:
             existing_bill = self.nubank_db_manager.card_bill_exists(time)
             if existing_bill:
                 if existing_bill.state != bill["state"]:
-                    logging.info(
-                        "Updating card Bill from %s",
-                        bill["summary"]["close_date"],
-                    )
-                    self.nubank_db_manager.update_card_bill(bill_data)
-                elif existing_bill.amout != bill["summary"]["total_balance"]:
-                    logging.info(
-                        "Updating card Bill from %s",
-                        bill["summary"]["close_date"],
-                    )
-                    self.nubank_db_manager.update_card_bill(bill_data)
+                    self._update_bill(bill, bill_data)
+                elif existing_bill.amount != bill["summary"]["total_balance"]:
+                    self._update_bill(bill, bill_data)
+                elif self._time_delta_is_over(
+                    existing_bill.close_date, datetime.now(), 90
+                ):
+                    break
             else:
                 logging.info(
                     "Saving card Bill from %s",
                     bill["summary"]["close_date"],
                 )
                 self.nubank_db_manager.save_card_bill(bill_data)
+
+    def _update_bill(self, bill, bill_data):
+        logging.info(
+            "Updating card Bill from %s",
+            bill["summary"]["close_date"],
+        )
+        self.nubank_db_manager.update_card_bill(bill_data)
+
+    @staticmethod
+    def _time_delta_is_over(start_time, end_time, time_limit):
+        difference = end_time - start_time
+        return True if difference.days >= time_limit else False
